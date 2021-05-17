@@ -1,0 +1,10 @@
+﻿@model IEnumerable<BookStore.Models.ViewModels.Shop.AuthorVM>
+
+<h3>Authors</h3>
+
+<ul>
+    @foreach (var item in Model)
+    {
+        <li><a href="/Shop/Author/@item.Slug.ToLower()">@item.Name</a></li>
+    }
+</ul>

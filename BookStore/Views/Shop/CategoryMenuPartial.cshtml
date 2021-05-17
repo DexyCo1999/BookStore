@@ -1,0 +1,12 @@
+﻿@model IEnumerable<BookStore.Models.ViewModels.Shop.CategoryVM>
+
+
+<h3>Categories</h3>
+
+<ul>
+    @foreach (var item in Model)
+    {
+        <li><a href="/Shop/Category/@item.Slug.ToLower()">@item.Name</a></li>
+    }
+</ul>
+

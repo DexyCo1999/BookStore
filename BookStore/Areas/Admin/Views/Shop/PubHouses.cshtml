@@ -1,0 +1,187 @@
+﻿@model IEnumerable<BookStore.Models.ViewModels.Shop.PubHouseVM>
+
+@{
+    ViewBag.Title = "PubHouses";
+}
+
+<h2>Publishing Houses</h2>
+<div class="new-pub">
+    <input type="text" id="newpubname" />
+    <p>
+        <a href="#" id="newpuba">Add a new publishing house</a>
+        <span class="ajax-text">
+            <img src="~/Content/img/ajax-loader.gif" />
+        </span>
+    </p>
+</div>
+
+@if (!Model.Any())
+{
+    <h1 class="text-center">There are no publishing houses.</h1>
+
+}
+else
+{
+    <table class="table sorting" id="pages">
+        <tr class="home">
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.Id">
+                <td>
+                    <div class="ajaxdivtd"></div>
+                    @Html.EditorFor(modelItem => item.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                </td>
+
+                <td>
+                    @Html.ActionLink("Delete", "DeletePubHouse", new { id = item.Id }, new { @class = "delete" })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+
+@section Scripts {
+
+    <script src="http://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+    <script>
+
+        $(function () {
+            /*
+            * Add new publishing house
+            */
+            var newPubA = $("a#newpuba");
+            var newPubTextInput = $("#newpubname");
+            var ajaxText = $("span.ajax-text");
+            var table = $("table#pages tbody");
+            newPubTextInput.keyup(function (e) {
+                if (e.keyCode == 13) {
+                    newPubA.click();
+                }
+            });
+            newPubA.click(function (e) {
+                e.preventDefault();
+                var pubName = newPubTextInput.val();
+                if (pubName.length < 2) {
+                    alert("Publishing house name must be at least 2 characters long.");
+                    return false;
+                }
+
+                ajaxText.show();
+                var url = "/Admin/Shop/AddNewPubHouse";
+                $.post(url, { pubName: pubName }, function (data) {
+                    var response = data.trim();
+                    if (response == "nametaken") {
+                        ajaxText.html("<span class='alert alert-danger'> That name is taken! </span>");
+                        setTimeout(function () {
+                            ajaxText.fadeOut("fast", function () {
+                                ajaxText.html("<img src=/Content/img/ajax-loader.gif />");
+                            });
+                        }, 2000);
+                        return false;
+                    } else {
+                        if (!$("table#pages").length) {
+                            location.reload();
+                        } else {
+                            ajaxText.html("<span class='alert alert-success'>The publishing house has been added! </span>");
+                            setTimeout(function () {
+                                ajaxText.fadeOut("fast", function () {
+                                    ajaxText.html("<img src=/Content/img/ajax-loader.gif />");
+                                });
+                            }, 2000);
+                            newPubTextInput.val("");
+                            var toAppend = $("table#pages tbody tr:last").clone();
+                            toAppend.attr("id", "id_" + data);
+                            toAppend.find("#item_Name").val(pubName);
+                            toAppend.find("a.delete").attr("href", "/Admin/Shop/DeletePubHouse/" + data);
+                            table.append(toAppend);
+                            table.sortable("refresh");
+                        }
+                    }
+                });
+            });
+            /////////////////////////////////////////////////////////////////////////////////
+            /*
+            * Reorder authors
+            */
+            /*$("table#pages tbody").sortable({
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight",
+                update: function () {
+                    var ids = $("table#pages tbody").sortable("serialize");
+                    var url = "/Admin/Shop/ReorderAuthors";
+
+
+                    $.post(url, ids, function (data) {
+                    });
+                }
+
+            })*/
+            /////////////////////////////////////////////////////////////////////////////////
+
+
+
+            /*
+             * Confrim category deletion
+             */
+            $("body").on("click", "a.delete", function () {
+                if (!confirm("Confirm page delition")) return false;
+            });
+
+            ///////////////////////////////////////////////////////////////
+
+            /*
+            * Rename author
+            */
+            var originalTextBoxValue;
+            $("table#pages input.text-box").dblclick(function () {
+                originalTextBoxValue = $(this).val();
+                $(this).attr("readonly", false);
+            });
+            $("table#pages input.text-box").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    $(this).blur();
+                }
+            });
+            $("table#pages input.text-box").blur(function () {
+                var $this = $(this);
+                var ajaxdiv = $this.parent().find(".ajaxdivtd");
+                var newPubName = $this.val();
+                var id = $this.parent().parent().attr("id").substring(3);
+                var url = "/admin/shop/RenamePubHouse";
+                if (newPubName.length < 2) {
+                    alert("The Publishing House name must be at least 2 characters long.");
+                    $this.attr("readonly", true);
+                    return false;
+                }
+                $.post(url, { newPubName: newPubName, id: id }, function (data) {
+                    var response = data.trim();
+                    if (response == "nametaken") {
+                        $this.val(originalTextBoxValue);
+                        ajaxdiv.html("<span class='alert alert-danger'>That name is taken!</span>").show();
+                    } else {
+                        ajaxdiv.html("<span class='alert alert-success'>The authors name has been changed!</span>").show();
+                    }
+                    setTimeout(function () {
+                        ajaxdiv.fadeOut("fast", function () {
+                            ajaxdiv.html("");
+                        });
+                    }, 2000);
+                }).done(function () {
+                    $this.attr("readonly", true);
+                });
+            });
+
+
+            ///////////////////////////////////////////////////////////////
+
+        });
+    </script>
+}

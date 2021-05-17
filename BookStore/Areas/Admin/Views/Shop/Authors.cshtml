@@ -1,0 +1,188 @@
+﻿@model IEnumerable<BookStore.Models.ViewModels.Shop.AuthorVM>
+
+@{
+    ViewBag.Title = "Authors";
+}
+
+<h2>Authors</h2>
+<div class="new-aut">
+    <input type="text" id="newautname" />
+    <p>
+        <a href="#" id="newauta">Add a new author</a>
+        <span class="ajax-text">
+            <img src="~/Content/img/ajax-loader.gif" />
+        </span>
+    </p>
+</div>
+
+@if (!Model.Any())
+{
+    <h1 class="text-center">There are no authors.</h1>
+
+}
+else
+{
+    <table class="table sorting" id="pages">
+        <tr class="home">
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr id="id_@item.Id">
+                <td>
+                    <div class="ajaxdivtd"></div>
+                    @Html.EditorFor(modelItem => item.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                </td>
+
+                <td>
+                    @Html.ActionLink("Delete", "DeleteAuthor", new { id = item.Id }, new { @class = "delete" })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+
+
+@section Scripts {
+
+    <script src="http://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+    <script>
+
+        $(function () {
+            /*
+            * Add new author
+            */
+            var newAutA = $("a#newauta");
+            var newAutTextInput = $("#newautname");
+            var ajaxText = $("span.ajax-text");
+            var table = $("table#pages tbody");
+            newAutTextInput.keyup(function (e) {
+                if (e.keyCode == 13) {
+                    newAutA.click();
+                }
+            });
+            newAutA.click(function (e) {
+                e.preventDefault();
+                var autName = newAutTextInput.val();
+                if (autName.length < 2) {
+                    alert("Author name must be at least 2 characters long.");
+                    return false;
+                }
+
+                ajaxText.show();
+                var url = "/Admin/Shop/AddNewAuthor";
+                $.post(url, { autName: autName }, function (data) {
+                    var response = data.trim();
+                    if (response == "nametaken") {
+                        ajaxText.html("<span class='alert alert-danger'> That name is taken! </span>");
+                        setTimeout(function () {
+                            ajaxText.fadeOut("fast", function () {
+                                ajaxText.html("<img src=/Content/img/ajax-loader.gif />");
+                            });
+                        }, 2000);
+                        return false;
+                    } else {
+                        if (!$("table#pages").length) {
+                            location.reload();
+                        } else {
+                            ajaxText.html("<span class='alert alert-success'>The author has been added! </span>");
+                            setTimeout(function () {
+                                ajaxText.fadeOut("fast", function () {
+                                    ajaxText.html("<img src=/Content/img/ajax-loader.gif />");
+                                });
+                            }, 2000);
+                            newAutTextInput.val("");
+                            var toAppend = $("table#pages tbody tr:last").clone();
+                            toAppend.attr("id", "id_" + data);
+                            toAppend.find("#item_Name").val(autName);
+                            toAppend.find("a.delete").attr("href", "/Admin/Shop/DeleteAuthor/" + data);
+                            table.append(toAppend);
+                            table.sortable("refresh");
+                        }
+                    }
+                });
+            });
+            /////////////////////////////////////////////////////////////////////////////////
+            /*
+            * Reorder authors
+            */
+            /*$("table#pages tbody").sortable({
+                items: "tr:not(.home)",
+                placeholder: "ui-state-highlight",
+                update: function () {
+                    var ids = $("table#pages tbody").sortable("serialize");
+                    var url = "/Admin/Shop/ReorderAuthors";
+
+
+                    $.post(url, ids, function (data) {
+                    });
+                }
+
+            })*/
+            /////////////////////////////////////////////////////////////////////////////////
+
+
+
+            /*
+             * Confrim category deletion
+             */
+            $("body").on("click", "a.delete", function () {
+                if (!confirm("Confirm page delition")) return false;
+            });
+
+            ///////////////////////////////////////////////////////////////
+
+            /*
+            * Rename author
+            */
+            var originalTextBoxValue;
+            $("table#pages input.text-box").dblclick(function () {
+                originalTextBoxValue = $(this).val();
+                $(this).attr("readonly", false);
+            });
+            $("table#pages input.text-box").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    $(this).blur();
+                }
+            });
+            $("table#pages input.text-box").blur(function () {
+                var $this = $(this);
+                var ajaxdiv = $this.parent().find(".ajaxdivtd");
+                var newAutName = $this.val();
+                var id = $this.parent().parent().attr("id").substring(3);
+                var url = "/admin/shop/RenameAuthor";
+                if (newAutName.length < 2) {
+                    alert("Author name must be at least 2 characters long.");
+                    $this.attr("readonly", true);
+                    return false;
+                }
+                $.post(url, { newAutName: newAutName, id: id }, function (data) {
+                    var response = data.trim();
+                    if (response == "nametaken") {
+                        $this.val(originalTextBoxValue);
+                        ajaxdiv.html("<span class='alert alert-danger'>That name is taken!</span>").show();
+                    } else {
+                        ajaxdiv.html("<span class='alert alert-success'>The authors name has been changed!</span>").show();
+                    }
+                    setTimeout(function () {
+                        ajaxdiv.fadeOut("fast", function () {
+                            ajaxdiv.html("");
+                        });
+                    }, 2000);
+                }).done(function () {
+                    $this.attr("readonly", true);
+                });
+            });
+
+
+            ///////////////////////////////////////////////////////////////
+
+        });
+    </script>
+}

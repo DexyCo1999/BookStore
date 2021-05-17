@@ -11,5 +11,9 @@ namespace BookStore.Models.Data
         //kako pistupam tabelama kroz entity framework
         public DbSet<PageDTO> Pages { get; set; }
         public DbSet<SidebarDTO> Sidebar { get; set; }
+        public DbSet<CategoryDTO> Categories { get; set; }
+        public DbSet<AuthorDTO> Authors { get; set; }
+        public DbSet<PubHouseDTO> PubHouses { get; set; }     
+        public DbSet<ProductDTO> Products { get; set; }
     }
 }
