@@ -3,6 +3,8 @@ using BookStore.Models.ViewModels.Cart;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Web;
 using System.Web.Mvc;
 
@@ -201,14 +203,14 @@ namespace BookStore.Controllers
             }
 
         }
-        /*
+        
         public ActionResult PaypalPartial()
         {
             List<CartVM> cart = Session["cart"] as List<CartVM>;
 
             return PartialView(cart);
         }
-
+       
         // POST: /Cart/PlaceOrder
         [HttpPost]
         public void PlaceOrder()
@@ -259,17 +261,17 @@ namespace BookStore.Controllers
             }
 
             // Email admin
-
             var client = new SmtpClient("smtp.mailtrap.io", 2525)
             {
-                Credentials = new NetworkCredential("0d070aafcb1689", "eb57198c44ec52"),
+                Credentials = new NetworkCredential("dd3eace92954e2", "b2b6937d19361f"),
                 EnableSsl = true
             };
             client.Send("admin@example.com", "admin@example.com", "New order", "You have a new order. Order number = " + orderId);
+           
 
 
             // Reset session
             Session["cart"] = null;
-        }*/
+        }
     }
 }

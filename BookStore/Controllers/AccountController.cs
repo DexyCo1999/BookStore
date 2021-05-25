@@ -1,5 +1,6 @@
 ﻿using BookStore.Models.Data;
 using BookStore.Models.ViewModels.Account;
+using BookStore.Models.ViewModels.Shop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -257,7 +258,7 @@ namespace BookStore.Controllers
             return Redirect("~/Account/User-Profile");
         }
 
-        /*
+        
         // GET: /account/Orders
         [Authorize(Roles = "User")]
         public ActionResult Orders()
@@ -319,6 +320,6 @@ namespace BookStore.Controllers
 
             // Return view with list of OrdersForUserVM
             return View(ordersForUser);
-        }*/
+        }
     }
 }
